@@ -12,13 +12,14 @@ import {
 } from "tsoa";
 import { Model } from "mongoose";
 import { IUser } from "../types/interfaces";
+import dotenv from "dotenv";
 
 const UsersModel: Model<IUser> = require("../models/users_model");
 const messages= require('../common/return_messages');
 const common_methods = require('../common/common_methods')
 var nodemailer = require('nodemailer');
 const bcrypt = require("bcrypt");
-
+dotenv.config();
 @Route("users")
 export default class UsersController {
   /**
@@ -132,9 +133,10 @@ export default class UsersController {
         if (user) {
             //  user found
             const newPassword = common_methods.generateRandomPassword()
+            const hash=await bcrypt.hash(newPassword, 10);
             const updatedUser = await   UsersModel.findOneAndUpdate({ email }, {
                 $set: {
-                    password: await bcrypt.hash(newPassword, 10)
+                    password: hash
                 }
             }, { lean: true })
             console.log(`${newPassword} +++++++++++++++++++++++++++++++++++++++`);
@@ -144,13 +146,13 @@ export default class UsersController {
                 var transporter = nodemailer.createTransport({
                   service: 'gmail',
                   auth: {
-                    user: 'bassamabosaleh1@gmail.com',
-                    pass: 'rmzhyparvorxsmbj'
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD_APP
                   }
                 });
                 
                 var mailOptions = {
-                  from: 'bassamabosaleh1@gmail.com',
+                  from: process.env.EMAIL,
                   to: email,
                   subject: 'Reset Password: ',
                   text: 'Your New Password is: '+ newPassword
@@ -181,7 +183,7 @@ export default class UsersController {
 
   @SuccessResponse("200", '{ ok: true, message: messages.returnMessages.MAIL_SUCCESS + " " + newPassword.toUpperCase()}')
   @Post("sendCode/{email}")
-  public async sendCode(@Path() email: string ): Promise<any> {
+  public async sendCode(@Path() email: string ): Promise<String> {
    
     try {
             const newPassword = common_methods.generateRandomPassword()
@@ -189,13 +191,13 @@ export default class UsersController {
                 var transporter = nodemailer.createTransport({
                   service: 'gmail',
                   auth: {
-                    user: 'bassamabosaleh1@gmail.com',
-                    pass: 'rmzhyparvorxsmbj'
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD_APP
                   }
                 });
                 console.log(email.toString());
                 var mailOptions = {
-                  from: 'bassamabosaleh1@gmail.com',
+                  from: process.env.EMAIL,
                   to: email,
                   subject: 'Verification Code: ',
                   text: 'Your Verification Cod is: '+ newPassword
@@ -213,9 +215,9 @@ export default class UsersController {
             
 
         
-    } catch (error) {
+    } catch (error:any) {
         // return messages.returnMessages.SERVER_ERROR
-        return error;
+        return error.toString();
         throw error;
     }
   }

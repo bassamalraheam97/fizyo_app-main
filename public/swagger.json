@@ -3777,7 +3777,9 @@
 						"description": "{ ok: true, message: messages.returnMessages.MAIL_SUCCESS + \" \" + newPassword.toUpperCase()}",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"type": "string"
+								}
 							}
 						}
 					}
