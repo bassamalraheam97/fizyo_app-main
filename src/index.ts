@@ -28,6 +28,10 @@ require("./auth/auth");
 
 dotenv.config();
 
+const multer=require('multer')  
+const path= require('path')
+const model = require('./models/files_model');
+
 const app: Application = express();
 const port = process.env.PORT;
 const uri: string = process.env.DATABASE_URI ?? "";
@@ -83,6 +87,50 @@ app.use("/users", UsersRoutes);
 app.use("/roles", RolesRoutes);
 app.use("/employees", EmployeesRoutes);
 app.use("/clients", ClientsRoutes);
+
+//=================================================================
+app.use('/uploads', express.static(__dirname +'/uploads'));
+
+var storage = multer.diskStorage({
+  destination: function (req:any, file:any, cb:any) {
+      cb(null, 'uploads')
+},
+
+filename: function (req:any, file:any, cb:any) {
+cb(null, new Date().toISOString()+file.originalname)
+}
+})
+
+var upload = multer({ storage: storage })
+
+app.post('/upload', upload.single('myFile'), async(req, res, next) => {
+
+const file = req.file
+if (!file) {
+  const error = new Error('Please upload a file')
+  // error.status = 400
+
+  return next("hey error")
+}
+
+const filepost= new model({
+file: file.path
+})
+
+const savedfile= await filepost.save()
+res.json(savedfile)
+
+})
+
+app.get('/file',async(req, res)=>{
+ const file = await model.find()
+ res.json(file)
+
+})
+
+
+//=================================================================
+
 
 app.get("/", (req: Request, res: Response) => {
   res.send(

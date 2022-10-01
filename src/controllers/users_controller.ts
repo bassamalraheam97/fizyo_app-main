@@ -14,6 +14,10 @@ import { Model } from "mongoose";
 import { IUser } from "../types/interfaces";
 
 const UsersModel: Model<IUser> = require("../models/users_model");
+const messages= require('../common/return_messages');
+const common_methods = require('../common/common_methods')
+var nodemailer = require('nodemailer');
+const bcrypt = require("bcrypt");
 
 @Route("users")
 export default class UsersController {
@@ -117,4 +121,103 @@ export default class UsersController {
     }
     return null;
   }
+  @Response(404, "{ ok: false, message: messages.returnMessages.NOT_FOUND }")
+  @Response(500, '{ ok: false,message: messages.returnMessages.SERVER_ERROR}')
+  @SuccessResponse("200", '{ ok: true, message: messages.returnMessages.MAIL_SUCCESS + " " + newPassword.toUpperCase()}')
+  @Post("forgetPassword/{email}")
+  public async forgetPassword(@Path() email: string ): Promise<any> {
+    const user = await UsersModel.findOne({ email })
+    console.log(user);
+    try {
+        if (user) {
+            //  user found
+            const newPassword = common_methods.generateRandomPassword()
+            const updatedUser = await   UsersModel.findOneAndUpdate({ email }, {
+                $set: {
+                    password: await bcrypt.hash(newPassword, 10)
+                }
+            }, { lean: true })
+            console.log(`${newPassword} +++++++++++++++++++++++++++++++++++++++`);
+            if (updatedUser) {
+                //  password updated successfully
+                // common_methods.sendMail(email, newPassword.toUpperCase())
+                var transporter = nodemailer.createTransport({
+                  service: 'gmail',
+                  auth: {
+                    user: 'bassamabosaleh1@gmail.com',
+                    pass: 'rmzhyparvorxsmbj'
+                  }
+                });
+                
+                var mailOptions = {
+                  from: 'bassamabosaleh1@gmail.com',
+                  to: email,
+                  subject: 'Reset Password: ',
+                  text: 'Your New Password is: '+ newPassword
+                };
+                
+                transporter.sendMail(mailOptions, function(error:any, info:any){
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    console.log('Email sent: ' + info.response);
+                  }
+                });
+                return  newPassword
+                ;
+            }
+
+        } else {
+            //  invalid mail address
+            return messages.returnMessages.NOT_FOUND
+            
+        }
+    } catch (error) {
+        // return messages.returnMessages.SERVER_ERROR
+        return error;
+        throw error;
+    }
+  }
+
+  @SuccessResponse("200", '{ ok: true, message: messages.returnMessages.MAIL_SUCCESS + " " + newPassword.toUpperCase()}')
+  @Post("sendCode/{email}")
+  public async sendCode(@Path() email: string ): Promise<any> {
+   
+    try {
+            const newPassword = common_methods.generateRandomPassword()
+           
+                var transporter = nodemailer.createTransport({
+                  service: 'gmail',
+                  auth: {
+                    user: 'bassamabosaleh1@gmail.com',
+                    pass: 'rmzhyparvorxsmbj'
+                  }
+                });
+                console.log(email.toString());
+                var mailOptions = {
+                  from: 'bassamabosaleh1@gmail.com',
+                  to: email,
+                  subject: 'Verification Code: ',
+                  text: 'Your Verification Cod is: '+ newPassword
+                };
+                
+                transporter.sendMail(mailOptions, function(error:any, info:any){
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    console.log('Email sent: ' + info.response);
+                  }
+                });
+                return  newPassword
+                ;
+            
+
+        
+    } catch (error) {
+        // return messages.returnMessages.SERVER_ERROR
+        return error;
+        throw error;
+    }
+  }
 }
+

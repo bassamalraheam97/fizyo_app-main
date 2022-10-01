@@ -18,7 +18,7 @@ describe("UsersController", () => {
             profilePicture: "main.png",
             firstName: "Muhammad",
             lastName: "Nour",
-            gender: "Male",
+            gender: "male",
             DOB: new Date("2022-09-10"),
             address: [
               {

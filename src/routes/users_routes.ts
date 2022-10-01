@@ -75,5 +75,26 @@ router.post("/login", async (req: any, res: any, next) => {
     }
   })(req, res, next);
 });
+router.post("/forgetPassword/:email", async (req, res) => {
+  const controller = new UsersController();
+  await controller
+    .forgetPassword(req.params.email)
+    .then((response) => res.send(response))
+    .catch((err) => {
+      console.log(err);
+      res.status(422).send(err);
+    });
+});
+
+router.post("/sendCode/:email", async (req, res) => {
+  const controller = new UsersController();
+  await controller
+    .sendCode(req.params.email)
+    .then((response) => res.send(response))
+    .catch((err) => {
+      console.log(err);
+      res.status(422).send(err);
+    });
+});
 
 export default router;

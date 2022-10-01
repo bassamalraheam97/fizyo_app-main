@@ -3737,6 +3737,64 @@
 				}
 			}
 		},
+		"/users/forgetPassword/{email}": {
+			"post": {
+				"operationId": "ForgetPassword",
+				"responses": {
+					"200": {
+						"description": "{ ok: true, message: messages.returnMessages.MAIL_SUCCESS + \" \" + newPassword.toUpperCase()}",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					},
+					"404": {
+						"description": "{ ok: false, message: messages.returnMessages.NOT_FOUND }"
+					},
+					"500": {
+						"description": "{ ok: false,message: messages.returnMessages.SERVER_ERROR}"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "email",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/users/sendCode/{email}": {
+			"post": {
+				"operationId": "SendCode",
+				"responses": {
+					"200": {
+						"description": "{ ok: true, message: messages.returnMessages.MAIL_SUCCESS + \" \" + newPassword.toUpperCase()}",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "email",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/roles": {
 			"get": {
 				"operationId": "GetRoles",
